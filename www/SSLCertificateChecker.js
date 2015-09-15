@@ -4,7 +4,7 @@ var exec = require('cordova/exec');
 function SSLCertificateChecker() {
 }
 
-SSLCertificateChecker.prototype.check = function (successCallback, errorCallback, serverURL, allowedSHA1FingerprintOrArray, allowedSHA1FingerprintAlt) {
+SSLCertificateChecker.prototype.check = function (successCallback, errorCallback, serverURL, allowedSHA1FingerprintOrArray, allowedSHA1FingerprintAlt, additionalCipherSuite) {
   if (typeof errorCallback != "function") {
     console.log("SSLCertificateChecker.find failure: errorCallback parameter must be a function");
     return
@@ -27,7 +27,7 @@ SSLCertificateChecker.prototype.check = function (successCallback, errorCallback
   if (allowedSHA1FingerprintAlt !== undefined) {
       fpArr.push(allowedSHA1FingerprintAlt);
   }
-  exec(successCallback, errorCallback, "SSLCertificateChecker", "check", [serverURL, false, fpArr]);
+  exec(successCallback, errorCallback, "SSLCertificateChecker", "check", [serverURL, false, fpArr, additionalCipherSuite]);
 };
 
 SSLCertificateChecker.prototype.checkInCertChain = function (successCallback, errorCallback, serverURL, allowedSHA1FingerprintOrArray, allowedSHA1FingerprintAlt) {

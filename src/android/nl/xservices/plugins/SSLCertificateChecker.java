@@ -28,7 +28,14 @@ public class SSLCertificateChecker extends CordovaPlugin {
             final String serverURL = args.getString(0);
             final Boolean checkInCertChain = args.getBoolean(1);
             final JSONArray allowedFingerprints = args.getJSONArray(2);
-            String[] serverCertFingerprints = getFingerprints(serverURL);
+            final String additionalCipherSuite;
+            if (args.isNull(3)) {
+              additionalCipherSuite = null;
+            } else {
+              additionalCipherSuite = args.getString(3);
+            }
+            // Log.e("MYAPP", additionalCipherSuite);
+            String[] serverCertFingerprints = getFingerprints(serverURL, additionalCipherSuite);
 
             int certChainCheckDepth = checkInCertChain ? serverCertFingerprints.length : 1;
             for (int i=0; i<certChainCheckDepth; i++) {
@@ -52,8 +59,13 @@ public class SSLCertificateChecker extends CordovaPlugin {
     }
   }
 
-  private static String[] getFingerprints(String httpsURL) throws IOException, NoSuchAlgorithmException, CertificateException, CertificateEncodingException {
+  private static String[] getFingerprints(String httpsURL, String additionalCipherSuite) throws IOException, NoSuchAlgorithmException, CertificateException, CertificateEncodingException {
     final HttpsURLConnection con = (HttpsURLConnection) new URL(httpsURL).openConnection();
+    if (additionalCipherSuite != null) {
+      // Wrap SSLSocketFactory to support legacy SSL cipher suite used by production backend
+      con.setSSLSocketFactory(new AdditionalCipherSuiteSSLSocketFactory(con.getSSLSocketFactory(),
+                                                                        additionalCipherSuite));
+    }
     con.setConnectTimeout(5000);
     con.connect();
     final Certificate[] certs = con.getServerCertificates();
